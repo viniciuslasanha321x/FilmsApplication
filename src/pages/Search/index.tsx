@@ -42,15 +42,19 @@ const Home: React.FC = () => {
       }
 
       setBookmarks(updatedBookmarks);
+      localStorage.setItem(
+        '@Movies:favorite',
+        JSON.stringify(updatedBookmarks)
+      );
     },
     [movies, bookmarks]
   );
 
-  useEffect(() => {
-    if (bookmarks) {
-      localStorage.setItem('@Movies:favorite', JSON.stringify(bookmarks));
-    }
-  }, [bookmarks]);
+  // useEffect(() => {
+  //   console.log(bookmarks);
+  //   if (bookmarks) {
+  //   }
+  // }, [bookmarks]);
 
   const handleNavigateToBookmarks = useCallback(() => {
     history.push('/bookmarks', { movies: bookmarks });
