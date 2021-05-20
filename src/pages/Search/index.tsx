@@ -33,15 +33,27 @@ const Home: React.FC = () => {
         (movie) => movie.id === id
       );
 
+      console.log(updatedBookmarks, bookmarkIndex);
+
       if (bookmarkIndex >= 0) {
         updatedBookmarks = updatedBookmarks.filter(
           (bookmark) => bookmark.id !== id
         );
+
+        console.log(updatedBookmarks);
       } else {
         updatedBookmarks.push({ ...movies[movieIndex], bookmarked: true });
       }
 
       setBookmarks(updatedBookmarks);
+
+      const getData = localStorage.getItem('@Movies:favorite');
+
+      if (getData) {
+        const teste = JSON.parse(getData);
+        console.log('getData:', teste);
+      }
+
       localStorage.setItem(
         '@Movies:favorite',
         JSON.stringify(updatedBookmarks)
@@ -49,12 +61,6 @@ const Home: React.FC = () => {
     },
     [movies, bookmarks]
   );
-
-  // useEffect(() => {
-  //   console.log(bookmarks);
-  //   if (bookmarks) {
-  //   }
-  // }, [bookmarks]);
 
   const handleNavigateToBookmarks = useCallback(() => {
     history.push('/bookmarks', { movies: bookmarks });

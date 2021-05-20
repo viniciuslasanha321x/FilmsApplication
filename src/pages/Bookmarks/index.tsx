@@ -19,8 +19,15 @@ const Bookmarks: React.FC = () => {
         (bookmark) => bookmark.id !== id
       );
 
+      const getData = localStorage.getItem('@Movies:favorite');
+
+      if (getData) {
+        const teste = JSON.parse(getData);
+        console.log('getData:', teste);
+      }
+
       localStorage.setItem(
-        '@Movies:bookmarks',
+        '@Movies:favorite',
         JSON.stringify(updatedBookmarks)
       );
 
