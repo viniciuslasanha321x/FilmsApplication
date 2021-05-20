@@ -1,66 +1,31 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useContext } from 'react';
 import { AiFillStar } from 'react-icons/ai';
 import { useHistory, useLocation } from 'react-router-dom';
-import ApiConfig from '../../config/movieApiConfig';
 import MovieCard from '../../components/MovieCard';
-import MovieInterface from '../../interfaces/IMovieInterface';
 
 import { Container, CardList } from './styles';
+import { MoviesContext } from '../../components/Context/favoritesMovies';
+import IMovieInterface from '../../interfaces/IMovieInterface';
 
 const Home: React.FC = () => {
   const location = useLocation();
   const history = useHistory();
-  const [movies, setMovies] = useState<MovieInterface[]>([]);
-  const [bookmarks, setBookmarks] = useState<MovieInterface[]>(() => {
-    const verifyFavorites = localStorage.getItem('@Movies:favorite');
-    return verifyFavorites ? JSON.parse(verifyFavorites) : [];
-  });
+
+  const {
+    searchMovies,
+    handleBookmark,
+    bookmarks,
+    movies,
+    savedBookmarks,
+  } = useContext(MoviesContext);
 
   useEffect(() => {
     const state = location.state as any;
     if (state) {
-      const savedBookmarks = state.bookmarks;
-      setBookmarks(savedBookmarks);
+      savedBookmarks(state.bookmarks);
     }
-  }, [location.state]);
-
-  const handleBookmark = useCallback(
-    (id: number) => {
-      let updatedBookmarks = bookmarks;
-      const movieIndex = movies.findIndex((movie) => movie.id === id);
-      const bookmarkIndex = updatedBookmarks.findIndex(
-        (movie) => movie.id === id
-      );
-
-      console.log(updatedBookmarks, bookmarkIndex);
-
-      if (bookmarkIndex >= 0) {
-        updatedBookmarks = updatedBookmarks.filter(
-          (bookmark) => bookmark.id !== id
-        );
-
-        console.log(updatedBookmarks);
-      } else {
-        updatedBookmarks.push({ ...movies[movieIndex], bookmarked: true });
-      }
-
-      setBookmarks(updatedBookmarks);
-
-      const getData = localStorage.getItem('@Movies:favorite');
-
-      if (getData) {
-        const teste = JSON.parse(getData);
-        console.log('getData:', teste);
-      }
-
-      localStorage.setItem(
-        '@Movies:favorite',
-        JSON.stringify(updatedBookmarks)
-      );
-    },
-    [movies, bookmarks]
-  );
+  }, [savedBookmarks, location.state]);
 
   const handleNavigateToBookmarks = useCallback(() => {
     history.push('/bookmarks', { movies: bookmarks });
@@ -73,34 +38,15 @@ const Home: React.FC = () => {
   const params = useQuery();
   const codequery = params.get('query');
 
-  const searchMovies = useCallback(async () => {
-    const url =
-      `https://api.themoviedb.org/3/search/multi?` +
-      `api_key=${ApiConfig.appKey}` +
-      `&language=pt-BR&query=${codequery}&page=1&include_adult=false`;
-
-    try {
-      const res = await fetch(url);
-      const data = await res.json();
-      const responseMovies: MovieInterface[] = data.results;
-      const markBookmarkedMovies = responseMovies.map((movie) => {
-        return {
-          ...movie,
-          bookmarked:
-            bookmarks.findIndex((bookmark) => bookmark.id === movie.id) >= 0,
-        };
-      });
-      setMovies(markBookmarkedMovies);
-    } catch (err) {
-      console.error(err);
-    }
-  }, [codequery, bookmarks]);
+  const getMovies = useCallback(async () => {
+    searchMovies(codequery);
+  }, [searchMovies, codequery]);
 
   useEffect(() => {
     if (codequery) {
-      searchMovies();
+      getMovies();
     }
-  }, [codequery, searchMovies]);
+  }, [codequery, getMovies]);
 
   return (
     <Container>
@@ -114,8 +60,9 @@ const Home: React.FC = () => {
         </span>
       </button>
       <CardList>
-        {movies.map((movie) => (
+        {movies.map((movie: IMovieInterface) => (
           <MovieCard
+            isFavorited={movie.bookmarked}
             handleBookmark={handleBookmark}
             movie={movie}
             key={movie.id}

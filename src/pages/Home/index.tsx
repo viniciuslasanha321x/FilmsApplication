@@ -1,5 +1,6 @@
 import React, { useState, useCallback, FormEvent } from 'react';
 import { useHistory } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 import { Container } from './styles';
 
@@ -11,7 +12,11 @@ const Home: React.FC = () => {
   const searchMovies = useCallback(
     async (event: FormEvent) => {
       event.preventDefault();
-      history.push(`/search?query=${query}`);
+      if (!query) {
+        toast.error('Campo De Busca Em Branco');
+      } else {
+        history.push(`/search?query=${query}`);
+      }
     },
     [history, query]
   );

@@ -1,40 +1,15 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useContext } from 'react';
+
 import { AiFillBackward } from 'react-icons/ai';
 import { useHistory } from 'react-router-dom';
-import MovieInterface from '../../interfaces/IMovieInterface';
+import { MoviesContext } from '../../components/Context/favoritesMovies';
 import MovieCard from '../../components/MovieCard';
 import { Container, CardList } from './styles';
 
 const Bookmarks: React.FC = () => {
   const history = useHistory();
-  const [bookmarks, setBookmarks] = useState<MovieInterface[]>(() => {
-    const verifyFavorites = localStorage.getItem('@Movies:favorite');
-    return verifyFavorites ? JSON.parse(verifyFavorites) : [];
-  });
 
-  const handleBookmark = useCallback(
-    (id: number) => {
-      let updatedBookmarks = bookmarks;
-      updatedBookmarks = updatedBookmarks.filter(
-        (bookmark) => bookmark.id !== id
-      );
-
-      const getData = localStorage.getItem('@Movies:favorite');
-
-      if (getData) {
-        const teste = JSON.parse(getData);
-        console.log('getData:', teste);
-      }
-
-      localStorage.setItem(
-        '@Movies:favorite',
-        JSON.stringify(updatedBookmarks)
-      );
-
-      setBookmarks(updatedBookmarks);
-    },
-    [bookmarks]
-  );
+  const { handleBookmark, bookmarks } = useContext(MoviesContext);
 
   const handleBackToHome = useCallback(() => {
     history.push('/', { bookmarks });
@@ -55,6 +30,7 @@ const Bookmarks: React.FC = () => {
       <CardList>
         {bookmarks.map((movie) => (
           <MovieCard
+            isFavorited={movie.bookmarked}
             handleBookmark={handleBookmark}
             movie={movie}
             key={movie.id}
